@@ -1,7 +1,12 @@
 import React from "react";
+import { connect } from 'react-redux';
 import { createUseRemoteComponent, getDependencies, createRequires } from "@paciolan/remote-component";
 import { makeStyles } from "@material-ui/core/styles";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import { bindActionCreators } from 'redux';
+import { updateLoadTestData } from "../lib/store";
+import GrafanaCustomCharts from './GrafanaCustomCharts';
+import MesheryPerformanceComponent from './MesheryPerformanceComponent';
 
 const fetcher = (url) => {
   console.log("here");
@@ -24,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Test() {
+function Test({ grafana, updateLoadTestData }) {
   const [loading, err, RemoteComponent] = useRemoteComponent("https://component-store.sagacious.dev/main.js");
   const classes = useStyles();
 
@@ -38,7 +43,22 @@ export default function Test() {
 
   return (
     <div className={classes.root}>
-      <RemoteComponent name="Meshery" />
+      <RemoteComponent
+        GrafanaCustomCharts={GrafanaCustomCharts}
+        updateLoadTestData={updateLoadTestData}
+        grafana={grafana}
+        MesheryPerformanceComponent={MesheryPerformanceComponent} />
     </div>
   );
 }
+
+const mapStateToProps = (st) => {
+  const grafana = st.get('grafana').toJS();
+  return { grafana };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  updateLoadTestData: bindActionCreators(updateLoadTestData, dispatch),
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Test)
